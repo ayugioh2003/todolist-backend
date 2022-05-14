@@ -1,5 +1,7 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
-  ]
+  "functions": {
+    "server.js": {
+      "runtime": "vercel-node"
+    }
+  }
 }
