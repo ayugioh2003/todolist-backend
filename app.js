@@ -28,7 +28,7 @@ const swaggerDocument = YAML.load(swaggerPath)
 
 // API Document
 app.use('/apidoc', swaggerUi.serve)
-apiState.get('api-docs', swaggerUi.setup(swaggerDocument))
+apiState.get('/apidocs', swaggerUi.setup(swaggerDocument))
 
 app.use(morgan('dev'))
 app.use(express.json())
