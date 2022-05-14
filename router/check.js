@@ -5,6 +5,6 @@ const router = express.Router()
 const checkController = require('../controller/check.js')
 
 // 登入權限測試
-router.post('/', checkController.check)
+router.get('/', checkController.check)
 
 module.exports = router
