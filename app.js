@@ -19,16 +19,18 @@ const todoRouter = require('./router/todo.js')
 const globalErrorHandler = require('./controller/globalError.js')
 const AppError = require('./utils/appError.js')
 const ApiState = require('./utils/apiState.js')
-const apiState = require('./utils/apiState.js')
 
 // Swagger
 const swaggerPath = path.resolve(__dirname, './swagger.yml')
 const swaggerDocument = YAML.load(swaggerPath)
-// const cssOptions = require('./utils/swagger.js')
+const cssOptions = require('./utils/swagger.js')
 
 // API Document
-app.use('/apidoc', swaggerUi.serve)
-apiState.get('/apidocs', swaggerUi.setup(swaggerDocument))
+app.use(
+  '/apidoc',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, cssOptions),
+)
 
 app.use(morgan('dev'))
 app.use(express.json())
