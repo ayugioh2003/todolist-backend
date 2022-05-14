@@ -1,0 +1,233 @@
+openapi: 3.0.0
+info:
+  title: todolist-v3
+  version: 1.0.0-oas3
+paths:
+  /check:
+    get:
+      summary: 登入權限測試
+      tags:
+        - Test
+      security:
+        - Bearer: {}
+      parameters:
+        - in: header
+          name: Authorization
+          description: JWT Token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: 未授權
+  /users/sign_in:
+    post:
+      summary: 使用者登入
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                    password:
+                      type: string
+                  required:
+                    - email
+                    - password
+      responses:
+        '200':
+          description: 登入成功
+        '401':
+          description: 登入失敗
+  /users/sign_out:
+    delete:
+      summary: 使用者登出
+      tags:
+        - Users
+      parameters:
+        - in: header
+          name: Authorization
+          description: JWT Token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 登出成功
+        '401':
+          description: 登出失敗
+      security:
+        - Bearer: {}
+  /todos:
+    get:
+      summary: TODO 列表
+      tags:
+        - Todos
+      security:
+        - Bearer: {}
+      parameters:
+        - in: header
+          name: Authorization
+          description: JWT Token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 自己的 TODO List
+        '401':
+          description: 未授權
+    post:
+      summary: 新增 TODO
+      tags:
+        - Todos
+      security:
+        - Bearer: {}
+      parameters:
+        - in: header
+          name: Authorization
+          description: JWT Token
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                todo:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                  required:
+                    - content
+      responses:
+        '201':
+          description: 該筆 TODO 資料
+        '401':
+          description: 未授權
+  /todos/{id}:
+    put:
+      summary: TODO 修改
+      tags:
+        - Todos
+      security:
+        - Bearer: {}
+      parameters:
+        - in: header
+          name: Authorization
+          description: JWT Token
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                todo:
+                  properties:
+                    content:
+                      type: string
+      responses:
+        '200':
+          description: 修改過的 TODO
+        '401':
+          description: 未授權
+    delete:
+      summary: TODO 刪除
+      tags:
+        - Todos
+      security:
+        - Bearer: {}
+      parameters:
+        - in: header
+          name: authorization
+          description: JWT Token
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 已刪除
+        '401':
+          description: 未授權
+  /todos/{id}/toggle:
+    patch:
+      summary: TODO 完成/已完成切換
+      tags:
+        - Todos
+      security:
+        - Bearer: {}
+      parameters:
+        - in: header
+          name: Authorization
+          description: JWT Token
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: TODO
+        '401':
+          description: 未授權
+  /users:
+    post:
+      summary: 使用者註冊
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  properties:
+                    email:
+                      type: string
+                    nickname:
+                      type: string
+                    password:
+                      type: string
+                  required:
+                    - email
+                    - password
+      responses:
+        '201':
+          description: 註冊成功
+        '422':
+          description: 註冊失敗
+servers:
+  - url: http://localhost:3005
+    # variables:
+    #   defaultHost:
+    #     default: localhost:3005
+  - url: https://todoo.5xcamp.us/
+components:
+  securitySchemes:
+    Bearer:
+      description: JWT Token
+      type: apiKey
+      name: Authorization
+      in: header
