@@ -7,6 +7,7 @@ const { successHandle } = require('../utils/resHandle.js');
 const ApiState = require('../utils/apiState');
 // Utils 加密模組
 const { hashPassword } = require('../utils/hash');
+const { checkEmail, checkPassword } = require('../utils/verification');
 
 /*
   res 回傳錯誤範例
@@ -79,7 +80,6 @@ const signup = catchAsync(async (req, res, next) => {
       })
     );
   }
-console.log(456);
   User.findOne({ email: memberData.email }, '_id nickname email').exec(
     (findErr, findRes) => {
       console.log('findErr', findErr);
@@ -92,7 +92,6 @@ console.log(456);
           })
         );
       }
-
       if (findRes !== null) {
         return next(
           new AppError({
@@ -105,8 +104,7 @@ console.log(456);
   );
 
   // 資料驗證全部通過再加密密碼
-  memberData.password = hashPassword(req.body.password);
-  console.log(123);
+  memberData.password = hashPassword(req.body.user.password);
   const createRes = await User.create(memberData);
   console.log('createRes', createRes);
   const data = {
@@ -115,7 +113,7 @@ console.log(456);
     email: createRes.email,
   };
 
-  return successHandle({ res, statusCode: 201, message: '註冊成功' });
+  return successHandle({ res, statusCode: 201, message: '註冊成功',data });
 });
 
 module.exports = {
