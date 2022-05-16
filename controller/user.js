@@ -1,10 +1,12 @@
 // Model
-const User = require('../model/user.js')
+const User = require('../model/user.js');
 // Utils
-const catchAsync = require('../utils/catchAsync')
-const AppError = require('../utils/appError')
-const { successHandle } = require('../utils/resHandle.js')
-const ApiState = require('../utils/apiState')
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { successHandle } = require('../utils/resHandle.js');
+const ApiState = require('../utils/apiState');
+// Utils 加密模組
+const { hashPassword } = require('../utils/hash');
 
 /*
   res 回傳錯誤範例
@@ -13,49 +15,46 @@ const ApiState = require('../utils/apiState')
   ApiState.js 可自行新增需要的錯誤內容
 */
 
-
 /*
   登入功能	POST	/sign_in
 */
 const signin = catchAsync(async (req, res, next) => {
   res.json({
-    "message": "登入成功",
-    "email": "test@gmail.com",
-    "nickname": "test"
-  }
-  )
+    message: '登入成功',
+    email: 'test@gmail.com',
+    nickname: 'test',
+  });
 
   // error
   // {
   //   "message": "登入失敗"
-  // }  
-})
+  // }
+});
 
 /*
   登出功能	GET	/sign_out
 */
 const signout = catchAsync(async (req, res, next) => {
   res.json({
-    "message": "已登出"
-  }
-  )
+    message: '已登出',
+  });
   // error
   // {
   //   "message": "登出失敗"
   // }
-  
-})
+});
 
 /*
   註冊功能	POST	/
 */
 const signup = catchAsync(async (req, res, next) => {
-
+  console.log(req.body);
   let memberData = {
-    nickname: req.body.nickname,
-    email: req.body.email,
-    password: req.body.password,
+    nickname: req.body.user.nickname,
+    email: req.body.user.email,
+    password: req.body.user.password,
   };
+
   if (!memberData.nickname || !memberData.email || !memberData.password) {
     return next(
       new AppError({
@@ -64,7 +63,7 @@ const signup = catchAsync(async (req, res, next) => {
       })
     );
   }
-  if (!checkPassword(req.body.password)) {
+  if (!checkPassword(req.body.user.password)) {
     return next(
       new AppError({
         message: '密碼格式錯誤，需包含至少一個英文字與數字，密碼八碼以上',
@@ -72,7 +71,7 @@ const signup = catchAsync(async (req, res, next) => {
       })
     );
   }
-  if (!checkEmail(req.body.email)) {
+  if (!checkEmail(req.body.user.email)) {
     return next(
       new AppError({
         message: '信箱格式錯誤',
@@ -80,11 +79,11 @@ const signup = catchAsync(async (req, res, next) => {
       })
     );
   }
-
+console.log(456);
   User.findOne({ email: memberData.email }, '_id nickname email').exec(
     (findErr, findRes) => {
-      console.log('findErr', findErr)
-      console.log('findRes', findRes)
+      console.log('findErr', findErr);
+      console.log('findRes', findRes);
       if (findErr) {
         return next(
           new AppError({
@@ -102,41 +101,25 @@ const signup = catchAsync(async (req, res, next) => {
           })
         );
       }
-    })
-  
+    }
+  );
 
+  // 資料驗證全部通過再加密密碼
   memberData.password = hashPassword(req.body.password);
-  const createRes = await User.create(memberData)
-  console.log('createRes', createRes)
+  console.log(123);
+  const createRes = await User.create(memberData);
+  console.log('createRes', createRes);
   const data = {
     _id: createRes._id,
     nickname: createRes.nickname,
     email: createRes.email,
   };
-  return successHandle({ res,statusCode:201, message: '註冊成功' });
 
-
-  res.json({
-    "message": "註冊成功",
-    "email": "a@gmail.com",
-    "nickname": "a"
-  }
-  )
-
-  // error
-  // {
-  //   "message": "註冊發生錯誤",
-  //   "error": [
-  //     "電子信箱 格式有誤"
-  //   ]
-  // }
-  
-})
-
-
+  return successHandle({ res, statusCode: 201, message: '註冊成功' });
+});
 
 module.exports = {
   signin,
   signout,
   signup,
-}
+};
