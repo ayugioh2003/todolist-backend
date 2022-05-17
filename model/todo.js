@@ -12,13 +12,26 @@ const TodoSchema = new mongoose.Schema(
       type: String,
       required: [true, '內容為必填'],
     },
-    // 完成時間，轉為 Timestamp 以方便前端好處理
+    // 建立時間，轉為 Timestamp 以方便前端好處理
     createdAt: {
       type: Number,
-      default: new Date().getTime(),
+    },
+
+    // 更新時間，轉為 Timestamp 以方便前端好處理
+    updatedAt: {
+      type: Number,
+    },
+    // 完成時間，轉為 Timestamp 以方便前端好處理
+    completed_at: {
+      type: Number,
     },
   },
-  { versionKey: false },
+  { 
+    versionKey: false,
+    timestamps: {
+      currentTime: () => Date.now()
+    }
+  },
 )
 
 const Todo = mongoose.model('Todo', TodoSchema)

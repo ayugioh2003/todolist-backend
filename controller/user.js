@@ -56,53 +56,35 @@ const signup = catchAsync(async (req, res, next) => {
     password: req.body.user.password,
   };
 
+  // 驗證
+  const errors = []
   if (!memberData.nickname || !memberData.email || !memberData.password) {
-    return next(
-      new AppError({
-        message: '名稱、信箱、密碼為必填項目',
-        statusCode: ApiState.FIELD_MISSING.statusCode,
-      })
-    );
-  }
-  if (!checkPassword(req.body.user.password)) {
-    return next(
-      new AppError({
-        message: '密碼格式錯誤，需包含至少一個英文字與數字，密碼八碼以上',
-        statusCode: ApiState.FIELD_MISSING.statusCode,
-      })
-    );
+    errors.push('名稱、信箱、密碼為必填項目')
   }
   if (!checkEmail(req.body.user.email)) {
+    errors.push('電子信箱 格式有誤')
+  }
+  if (!checkPassword(req.body.user.password)) {
+    errors.push('密碼 字數太少，至少需要 6 個字')
+  }
+  if (checkEmail(req.body.user.email)) {
+    const userRes = await User.findOne({ email: memberData.email }).exec()
+    console.log('userRes1', userRes)
+    if (userRes) {
+      errors.push('電子信箱 已被使用')
+    }
+  }
+
+  if (errors.length > 0) {
     return next(
       new AppError({
-        message: '信箱格式錯誤',
+        message: '註冊發生錯誤',
+        errors,
         statusCode: ApiState.FIELD_MISSING.statusCode,
       })
-    );
+    )
   }
-  User.findOne({ email: memberData.email }, '_id nickname email').exec(
-    (findErr, findRes) => {
-      console.log('findErr', findErr);
-      console.log('findRes', findRes);
-      if (findErr) {
-        return next(
-          new AppError({
-            message: ApiState.INTERNAL_SERVER_ERROR.message,
-            statusCode: ApiState.INTERNAL_SERVER_ERROR.statusCode,
-          })
-        );
-      }
-      if (findRes !== null) {
-        return next(
-          new AppError({
-            message: '信箱已被使用',
-            statusCode: ApiState.DATA_EXIST.statusCode,
-          })
-        );
-      }
-    }
-  );
-
+  
   // 資料驗證全部通過再加密密碼
   memberData.password = hashPassword(req.body.user.password);
   const createRes = await User.create(memberData);
@@ -113,7 +95,7 @@ const signup = catchAsync(async (req, res, next) => {
     email: createRes.email,
   };
 
-  return successHandle({ res, statusCode: 201, message: '註冊成功',data });
+  return successHandle({ res, statusCode: 201, message: '註冊成功', ...data });
 });
 
 module.exports = {

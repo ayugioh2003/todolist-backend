@@ -41,9 +41,8 @@ function checkEmail(email) {
 
 // 驗證密碼
 function checkPassword(password) {
-  const re = /^(?=.*\d)(?=.*[a-zA-Z]).{7,}$/
-  const result = re.test(password)
-
-  return result
+  return password.length >= 6
+  // const re = /^(?=.*\d)(?=.*[a-zA-Z]).{7,}$/
+  // const result = re.test(password)
 }
 module.exports = { verifyToken, checkEmail,checkPassword };
