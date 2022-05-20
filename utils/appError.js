@@ -2,14 +2,17 @@ class AppError extends Error {
   constructor(
     { message,
       status,
-      statusCode
+      statusCode,
+      errors,
+      customError
     }) {
     super(message)
-
     this.stack = ''
     this.statusCode = statusCode // Http 狀態碼
     this.status = status // 客製化狀態碼
     this.message = message // 錯誤訊息
+    this.errors = errors
+    this.customError = customError
     /*
     `Error.captureStackTrace` 函數
       [Systax] Error.captureStackTrace(targetObject[, constructorOpt])

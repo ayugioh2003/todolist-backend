@@ -34,16 +34,18 @@ const UserSchema = new mongoose.Schema({
   // 建立時間，轉為 Timestamp 以方便前端好處理
   createdAt: {
     type: Number,
-    default: new Date().getTime(),
   },
 
   // 更新時間，轉為 Timestamp 以方便前端好處理
   updatedAt: {
     type: Number,
-    default: new Date().getTime(),
   },
 },
-  { versionKey: false }
+  { versionKey: false, 
+    timestamps: {
+      currentTime: () => Date.now()
+    } 
+  }
 )
 
 
