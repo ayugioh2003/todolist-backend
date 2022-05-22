@@ -1,15 +1,15 @@
 // Model
-const User = require('../model/user.js');
+const User = require('../model/user.js')
 // Utils
-const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError');
-const { successHandle } = require('../utils/resHandle.js');
-const ApiState = require('../utils/apiState');
+const catchAsync = require('../utils/catchAsync')
+const AppError = require('../utils/appError')
+const { successHandle } = require('../utils/resHandle.js')
+const ApiState = require('../utils/apiState')
 // Utils 加密模組
-const { hashPassword } = require('../utils/hash');
-const { checkEmail, checkPassword } = require('../utils/verification');
+const { hashPassword } = require('../utils/hash')
+const { checkEmail, checkPassword } = require('../utils/verification')
 // jwt
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken')
 
 /*
   res 回傳錯誤範例
@@ -22,44 +22,44 @@ const jwt = require('jsonwebtoken');
   登入功能	POST	/sign_in
 */
 const signin = catchAsync(async (req, res, next) => {
-  console.log(req.body);
+  console.log(req.body)
   let memberData = {
     email: req.body.user.email,
     password: req.body.user.password,
-  };
+  }
 
   // 驗證
-  const errors = [];
+  const errors = []
   if (!memberData.email || !memberData.password) {
-    errors.push('信箱、密碼為必填項目');
+    errors.push('信箱、密碼為必填項目')
   }
   if (checkEmail(req.body.user.email) === false) {
-    errors.push('電子信箱 格式有誤');
+    errors.push('電子信箱 格式有誤')
   }
   if (!checkPassword(req.body.user.password)) {
-    errors.push('密碼 字數太少，至少需要 6 個字');
+    errors.push('密碼 字數太少，至少需要 6 個字')
   }
   // 驗證通過再加密密碼
-  memberData.password = hashPassword(req.body.user.password);
+  memberData.password = hashPassword(req.body.user.password)
 
   const findRes = await User.findOne({
     email: memberData.email,
     password: memberData.password,
-  });
+  })
 
   // find 沒找到東西的 res 是 null
   if (findRes === null) {
-    errors.push('登入失敗，信箱或密碼錯誤');
+    errors.push('登入失敗，信箱或密碼錯誤')
   }
-  
+
   if (errors.length > 0) {
     return next(
       new AppError({
-        message: '登入發生錯誤',
+        message: '登入失敗',
         errors,
-        statusCode: ApiState.FIELD_MISSING.statusCode,
+        statusCode: 401,
       })
-    );
+    )
   }
   const token = jwt.sign(
     // data的內容可以在登入解密出來
@@ -76,11 +76,17 @@ const signin = catchAsync(async (req, res, next) => {
       // exp: Math.floor(Date.now() / 1000) + 60 * 60,
       expiresIn: process.env.EXPIRES_IN,
     }
-  );
-  res.setHeader('token', token);
+  )
+  res.setHeader('authorization', `Bearer ${token}`)
 
-  return successHandle({ res, statusCode: 200, message: '登入成功', data:findRes });
-});
+  return successHandle({
+    res,
+    statusCode: 200,
+    message: '登入成功',
+    email: findRes.email,
+    nickname: findRes.nickname,
+  })
+})
 
 /*
   登出功能	GET	/sign_out
@@ -88,40 +94,40 @@ const signin = catchAsync(async (req, res, next) => {
 const signout = catchAsync(async (req, res, next) => {
   res.json({
     message: '已登出',
-  });
+  })
   // error
   // {
   //   "message": "登出失敗"
   // }
-});
+})
 
 /*
   註冊功能	POST	/
 */
 const signup = catchAsync(async (req, res, next) => {
-  console.log(req.body);
+  console.log(req.body)
   let memberData = {
     nickname: req.body.user.nickname,
     email: req.body.user.email,
     password: req.body.user.password,
-  };
+  }
 
   // 驗證
-  const errors = [];
+  const errors = []
   if (!memberData.nickname || !memberData.email || !memberData.password) {
-    errors.push('名稱、信箱、密碼為必填項目');
+    errors.push('名稱、信箱、密碼為必填項目')
   }
   if (!checkEmail(req.body.user.email)) {
-    errors.push('電子信箱 格式有誤');
+    errors.push('電子信箱 格式有誤')
   }
   if (!checkPassword(req.body.user.password)) {
-    errors.push('密碼 字數太少，至少需要 6 個字');
+    errors.push('密碼 字數太少，至少需要 6 個字')
   }
   if (checkEmail(req.body.user.email)) {
-    const userRes = await User.findOne({ email: memberData.email }).exec();
-    console.log('userRes1', userRes);
+    const userRes = await User.findOne({ email: memberData.email }).exec()
+    console.log('userRes1', userRes)
     if (userRes) {
-      errors.push('電子信箱 已被使用');
+      errors.push('電子信箱 已被使用')
     }
   }
 
@@ -132,24 +138,24 @@ const signup = catchAsync(async (req, res, next) => {
         errors,
         statusCode: ApiState.FIELD_MISSING.statusCode,
       })
-    );
+    )
   }
 
   // 資料驗證全部通過再加密密碼
-  memberData.password = hashPassword(req.body.user.password);
-  const createRes = await User.create(memberData);
-  console.log('createRes', createRes);
+  memberData.password = hashPassword(req.body.user.password)
+  const createRes = await User.create(memberData)
+  console.log('createRes', createRes)
   const data = {
     _id: createRes._id,
     nickname: createRes.nickname,
     email: createRes.email,
-  };
+  }
 
-  return successHandle({ res, statusCode: 201, message: '註冊成功', ...data });
-});
+  return successHandle({ res, statusCode: 201, message: '註冊成功', ...data })
+})
 
 module.exports = {
   signin,
   signout,
   signup,
-};
+}
