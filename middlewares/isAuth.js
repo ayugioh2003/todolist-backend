@@ -16,7 +16,7 @@ const { verifyToken } = require('../utils/verification')
 /*
   登入功能	GET	/check
 */
-const check = catchAsync(async (req, res, next) => {
+const isAuth = catchAsync(async (req, res, next) => {
   // 確認 token 是否存在
   let token
   if (
@@ -25,11 +25,10 @@ const check = catchAsync(async (req, res, next) => {
   ) {
     [, token] = req.headers.authorization.split(' ')
   }
-  console.log('token', token)
   if (!token) {
     return next(
       new AppError({
-        message: '未授權',
+        message: 'token不存在',
         status: ApiState.DATA_EXIST.status,
         statusCode: ApiState.DATA_EXIST.statusCode,
       })
@@ -40,7 +39,8 @@ const check = catchAsync(async (req, res, next) => {
   const verify = await verifyToken(token)
   if (verify) {
     const result = await User.findOne({ _id: verify }, '_id name email')
-    return successHandle({ res, message: 'OK!', data: result })
+    req.user = result
+    return next()
   }
 
   return next(
@@ -53,5 +53,5 @@ const check = catchAsync(async (req, res, next) => {
 })
 
 module.exports = {
-  check,
+  isAuth,
 }

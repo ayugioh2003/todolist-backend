@@ -20,7 +20,7 @@ function verifyToken(token) {
           result = false;
           resolve(result);
         } else {
-          result = decoded.data;
+          result = decoded.id;
           resolve(result);
         }
       });
