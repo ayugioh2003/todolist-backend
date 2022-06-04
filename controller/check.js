@@ -25,10 +25,11 @@ const check = catchAsync(async (req, res, next) => {
   ) {
     [, token] = req.headers.authorization.split(' ')
   }
+  console.log('token', token)
   if (!token) {
     return next(
       new AppError({
-        message: 'token不存在',
+        message: '未授權',
         status: ApiState.DATA_EXIST.status,
         statusCode: ApiState.DATA_EXIST.statusCode,
       })
@@ -39,7 +40,7 @@ const check = catchAsync(async (req, res, next) => {
   const verify = await verifyToken(token)
   if (verify) {
     const result = await User.findOne({ _id: verify }, '_id name email')
-    return successHandle({ res, message: '驗證通過', data: result })
+    return successHandle({ res, message: 'OK!', data: result })
   }
 
   return next(
