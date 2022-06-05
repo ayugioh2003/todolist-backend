@@ -8,33 +8,25 @@ const { successHandle } = require('../utils/resHandle.js')
 
 // 取得待辦列表 GET /todos
 const getTodo = catchAsync(async (req, res) => {
-  res.json({
-    "todos": [
-      {
-        "id": "6990914bd981fad6be4d587f024f7c0b",
-        "content": "123",
-        "completed_at": "2022-05-13T16:12:16.615+08:00"
-      }
-    ]
-  }
-  )
-  // error 
-  // {
-  //   "message": "未授權"
-  // }
-  
+  const user_id = req.user._id
+
+  const data = await Todo.find({ user_id })
+
+  successHandle({ res, message: '取得待辦列表成功', data })
 })
 
 // 新增待辦  POST /todos
 const createTodo = catchAsync(async (req, res, next) => {
-  res.json({
-    "id": "7ee245b09ff5b738b01f83ee5dabadfa",
-    "content": "string"
+  const { content } = req.body
+
+  if (!content) return next(new AppError(ApiState.FIELD_MISSING))
+
+  const data = await Todo.create({
+    user_id: req.user._id,
+    content
   })
-  // error 
-  // {
-  //   "message": "未授權"
-  // }
+
+  successHandle({ res, message: '新增待辦成功', data })
 })
 
 // 編輯待辦  PUT /todos/:todo_id
